@@ -1,0 +1,102 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: '5'
+    kubectl.kubernetes.io/last-applied-configuration: >
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app":"qotd","tier":"api"},"name":"qotd-pdf","namespace":"qotd"},"spec":{"replicas":1,"selector":{"matchLabels":{"app":"qotd-pdf"}},"template":{"metadata":{"labels":{"app":"qotd-pdf"}},"spec":{"containers":[{"env":[{"name":"INSTANA_AGENT_HOST","valueFrom":{"fieldRef":{"fieldPath":"status.hostIP"}}},{"name":"LOG_LEVEL","value":"DEBUG"},{"name":"POLLING_FREQUENCY","value":"5000"},{"name":"ANOMALY_GENERATOR_URL","value":"http://qotd-usecase.qotd-usecase.svc.cluster.local:3012/services/pdf"},{"name":"ENABLE_INSTANA","value":"true"},{"name":"QUOTE_SVC","value":"http://119.81.225.165"}],"image":"jp.icr.io/qotd/qotd-pdf-service:v1.0","imagePullPolicy":"Always","livenessProbe":{"httpGet":{"path":"/health","port":3005},"initialDelaySeconds":10,"periodSeconds":5},"name":"qotd-pdf","ports":[{"containerPort":3005,"name":"http","protocol":"TCP"}],"resources":{"limits":{"cpu":"200m","memory":"800Mi"},"requests":{"cpu":"25m","memory":"300Mi"}}}],"imagePullSecrets":[{"name":"registry-secret"}],"restartPolicy":"Always"}}}}
+  resourceVersion: '13737350'
+  name: qotd-pdf
+
+  namespace: qotd
+  labels:
+    app: qotd
+    tier: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qotd-pdf
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: qotd-pdf
+    spec:
+      containers:
+        - resources:
+            limits:
+              cpu: 200m
+              memory: 800Mi
+            requests:
+              cpu: 25m
+              memory: 300Mi
+          terminationMessagePath: /dev/termination-log
+          name: qotd-pdf
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3005
+              scheme: HTTP
+            initialDelaySeconds: 10
+            timeoutSeconds: 1
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          env:
+            - name: INSTANA_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
+            - name: LOG_LEVEL
+              value: DEBUG
+            - name: POLLING_FREQUENCY
+              value: '5000'
+            - name: ANOMALY_GENERATOR_URL
+              value: >-
+                http://qotd-usecase.qotd-usecase.svc.cluster.local:3012/services/pdf
+            - name: ENABLE_INSTANA
+              value: 'true'
+            - name: QUOTE_SVC
+              value: 'http://119.81.225.165'
+          ports:
+            - name: http
+              containerPort: 3005
+              protocol: TCP
+          imagePullPolicy: Always
+          terminationMessagePolicy: File
+          image: 'jp.icr.io/qotd/qotd-pdf-service:v1.0'
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      imagePullSecrets:
+        - name: registry-secret
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+status:
+  observedGeneration: 5
+  replicas: 1
+  updatedReplicas: 1
+  readyReplicas: 1
+  availableReplicas: 1
+  conditions:
+    - type: Available
+      status: 'True'
+      lastUpdateTime: '2022-04-07T07:44:13Z'
+      lastTransitionTime: '2022-04-07T07:44:13Z'
+      reason: MinimumReplicasAvailable
+      message: Deployment has minimum availability.
+    - type: Progressing
+      status: 'True'
+      lastUpdateTime: '2022-04-12T03:07:17Z'
+      lastTransitionTime: '2022-04-07T01:26:38Z'
+      reason: NewReplicaSetAvailable
+      message: ReplicaSet "qotd-pdf-85b9458cf8" has successfully progressed.

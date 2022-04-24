@@ -1,0 +1,25 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: qotd-engraving
+  namespace: qotd
+  labels:
+    app: qotd
+    tier: api
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: >
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"qotd","tier":"api"},"name":"qotd-engraving","namespace":"qotd"},"spec":{"ports":[{"name":"http","port":3006,"protocol":"TCP","targetPort":3006}],"selector":{"app":"qotd-engraving"},"type":"ClusterIP"}}
+
+spec:
+  ports:
+    - name: http
+      protocol: TCP
+      port: 3006
+      targetPort: 3006
+  selector:
+    app: qotd-engraving
+
+  type: NodePort
+
+status:
+  loadBalancer: {}

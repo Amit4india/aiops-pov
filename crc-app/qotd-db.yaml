@@ -1,0 +1,81 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: '1'
+    kubectl.kubernetes.io/last-applied-configuration: >
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app":"qotd"},"name":"qotd-db","namespace":"qotd"},"spec":{"replicas":1,"selector":{"matchLabels":{"app":"qotd-db"}},"template":{"metadata":{"labels":{"app":"qotd-db"}},"spec":{"containers":[{"env":[{"name":"MYSQL_DATABASE","value":"qotd"}],"envFrom":[{"secretRef":{"name":"mysql-secret"}}],"image":"jp.icr.io/qotd/qotd-db:v1.0","imagePullPolicy":"Always","name":"qotd-db","ports":[{"containerPort":3306,"name":"mysql","protocol":"TCP"}],"volumeMounts":[{"mountPath":"/var/lib/mysql","name":"db-vol"}]}],"imagePullSecrets":[{"name":"registry-secret"}],"volumes":[{"name":"db-vol","persistentVolumeClaim":{"claimName":"db-pvc"}}]}}}}
+  resourceVersion: '2092929'
+  name: qotd-db
+
+  namespace: qotd
+  labels:
+    app: qotd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qotd-db
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: qotd-db
+    spec:
+      volumes:
+        - name: db-vol
+          persistentVolumeClaim:
+            claimName: db-pvc
+      containers:
+        - resources: {}
+          terminationMessagePath: /dev/termination-log
+          name: qotd-db
+          env:
+            - name: MYSQL_DATABASE
+              value: qotd
+          ports:
+            - name: mysql
+              containerPort: 3306
+              protocol: TCP
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: db-vol
+              mountPath: /var/lib/mysql
+          terminationMessagePolicy: File
+          envFrom:
+            - secretRef:
+                name: mysql-secret
+          image: 'jp.icr.io/qotd/qotd-db:v1.0'
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      imagePullSecrets:
+        - name: registry-secret
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+status:
+  observedGeneration: 1
+  replicas: 1
+  updatedReplicas: 1
+  readyReplicas: 1
+  availableReplicas: 1
+  conditions:
+    - type: Available
+      status: 'True'
+      lastUpdateTime: '2022-04-07T01:54:11Z'
+      lastTransitionTime: '2022-04-07T01:54:11Z'
+      reason: MinimumReplicasAvailable
+      message: Deployment has minimum availability.
+    - type: Progressing
+      status: 'True'
+      lastUpdateTime: '2022-04-07T01:54:11Z'
+      lastTransitionTime: '2022-04-07T01:54:11Z'
+      reason: NewReplicaSetAvailable
+      message: ReplicaSet "qotd-db-55d45f888f" has successfully progressed.

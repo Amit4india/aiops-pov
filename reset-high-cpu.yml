@@ -1,0 +1,10 @@
+---
+- name: Using a REST API
+  become: false
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Reset High CPU
+      uri:
+        url: https://qotd-usecase-qotd-usecase.itzroks-270002hrww-p2g2iz-8946bbc006b7c6eb0829d088919818bb-0000.che01.containers.appdomain.cloud/reset
+        method: POST

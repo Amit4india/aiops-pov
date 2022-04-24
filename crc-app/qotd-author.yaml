@@ -1,0 +1,113 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: '8'
+    kubectl.kubernetes.io/last-applied-configuration: >
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{},"labels":{"app":"qotd","tier":"api"},"name":"qotd-author","namespace":"qotd"},"spec":{"replicas":1,"selector":{"matchLabels":{"app":"qotd-author"}},"template":{"metadata":{"labels":{"app":"qotd-author"}},"spec":{"containers":[{"env":[{"name":"INSTANA_AGENT_HOST","valueFrom":{"fieldRef":{"fieldPath":"status.hostIP"}}},{"name":"LOG_LEVEL","value":"DEBUG"},{"name":"ENABLE_INSTANA","value":"true"},{"name":"IMAGE_SVC","value":"qotd-image.qotd.svc.cluster.local:3003"},{"name":"DB_HOST","value":"qotd-db.qotd.svc.cluster.local"},{"name":"DB_NAME","value":"qotd"},{"name":"DB_USER","value":"root"},{"name":"DB_PASS","valueFrom":{"secretKeyRef":{"key":"MYSQL_ROOT_PASSWORD","name":"mysql-secret","optional":false}}},{"name":"POLLING_FREQUENCY","value":"5000"},{"name":"ANOMALY_GENERATOR_URL","value":"http://qotd-usecase.qotd-usecase.svc.cluster.local:3012/services/author"}],"image":"jp.icr.io/qotd/qotd-author:v1.0","imagePullPolicy":"Always","livenessProbe":{"failureThreshold":10,"httpGet":{"path":"/health","port":3002},"initialDelaySeconds":10,"periodSeconds":20,"successThreshold":1,"timeoutSeconds":10},"name":"qotd-author","ports":[{"containerPort":3002,"name":"http","protocol":"TCP"}],"resources":{"limits":{"cpu":"200m","memory":"800Mi"},"requests":{"cpu":"25m","memory":"350Mi"}}}],"imagePullSecrets":[{"name":"registry-secret"}],"restartPolicy":"Always"}}}}
+  resourceVersion: '14551243'
+  name: qotd-author
+  namespace: qotd
+  labels:
+    app: qotd
+    tier: api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: qotd-author
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: qotd-author
+    spec:
+      containers:
+        - resources:
+            limits:
+              cpu: 200m
+              memory: 800Mi
+            requests:
+              cpu: 25m
+              memory: 350Mi
+          terminationMessagePath: /dev/termination-log
+          name: qotd-author
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3002
+              scheme: HTTP
+            initialDelaySeconds: 10
+            timeoutSeconds: 10
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 10
+          env:
+            - name: INSTANA_AGENT_HOST
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.hostIP
+            - name: LOG_LEVEL
+              value: DEBUG
+            - name: ENABLE_INSTANA
+              value: 'true'
+            - name: IMAGE_SVC
+              value: 'qotd-image.qotd.svc.cluster.local:3003'
+            - name: DB_HOST
+              value: qotd-db.qotd.svc.cluster.local
+            - name: DB_NAME
+              value: qotd
+            - name: DB_USER
+              value: root
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: MYSQL_ROOT_PASSWORD
+                  optional: false
+            - name: POLLING_FREQUENCY
+              value: '5000'
+            - name: ANOMALY_GENERATOR_URL
+              value: >-
+                http://qotd-usecase.qotd-usecase.svc.cluster.local:3012/services/author
+          ports:
+            - name: http
+              containerPort: 3002
+              protocol: TCP
+          imagePullPolicy: Always
+          terminationMessagePolicy: File
+          image: 'jp.icr.io/qotd/qotd-author:v1.0'
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      imagePullSecrets:
+        - name: registry-secret
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
+status:
+  observedGeneration: 8
+  replicas: 1
+  updatedReplicas: 1
+  readyReplicas: 1
+  availableReplicas: 1
+  conditions:
+    - type: Available
+      status: 'True'
+      lastUpdateTime: '2022-04-07T07:29:10Z'
+      lastTransitionTime: '2022-04-07T07:29:10Z'
+      reason: MinimumReplicasAvailable
+      message: Deployment has minimum availability.
+    - type: Progressing
+      status: 'True'
+      lastUpdateTime: '2022-04-12T11:37:23Z'
+      lastTransitionTime: '2022-04-07T01:26:14Z'
+      reason: NewReplicaSetAvailable
+      message: ReplicaSet "qotd-author-65cd9985f4" has successfully progressed.

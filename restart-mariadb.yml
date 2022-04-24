@@ -1,0 +1,6 @@
+# Playbook to restart the Maria DB service
+- name: restart the mariadb service
+  hosts: 119.81.167.146
+  tasks:
+    - name: Restart the DB service
+      service: name=mariadb state=restarted
